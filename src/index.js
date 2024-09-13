@@ -1,9 +1,16 @@
 import express from 'express';
 import dotenv from "dotenv"
 import connectDB from "./db/index.js"
+import cookieParser from 'cookie-parser';
+import userRouter from './routes/user.route.js';
 
 
 const app = express();
+
+app.use(express.json({limit: "16kb"}))
+app.use(express.urlencoded({extended: true, limit: "16kb"}))
+app.use(express.static("public"))
+app.use(cookieParser())
 
 
 dotenv.config({
@@ -20,9 +27,9 @@ connectDB()
     console.log("Mongodb connection failed !!! ", err);
 })
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-});
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
-});
+
+// routes declaration
+
+app.use("/api/v1/user", userRouter)
+
+export { app }
