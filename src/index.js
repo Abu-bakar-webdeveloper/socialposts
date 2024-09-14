@@ -31,7 +31,7 @@ connectDB()
 
 // routes declaration
 
-app.use("/api/v1/user", userRouter)
+app.use("/user", userRouter)
 app.use("/api", postRouter)
 
 export { app }
