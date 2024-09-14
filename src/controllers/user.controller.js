@@ -2,6 +2,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import mongoose from "mongoose";
+import PostModel from "../models/post.model.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -230,7 +232,54 @@ const updateAccountsDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "account updated successfully"));
 });
 
+const getUserPosts = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError(400, "Invalid user ID");
+  }
+
+  // Aggregation pipeline to get user posts
+  const userPosts = await PostModel.aggregate([
+    {
+      $match: { user: userId },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "userDetails",
+      },
+    },
+    {
+      $unwind: "$userDetails",
+    },
+    {
+      $project: {
+        _id: 1,
+        desc: 1,
+        image: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        "userDetails.name": 1,
+        "userDetails.email": 1,
+      },
+    },
+  ]);
+
+  if (!userPosts.length) {
+    throw new ApiError(404, "No posts found for this user");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userPosts, "User posts fetched successfully"));
+});
+
+
 export {
+  getUserPosts,
   registerUser,
   loginUser,
   logoutUser,
