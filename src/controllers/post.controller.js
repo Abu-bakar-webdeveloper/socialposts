@@ -35,7 +35,6 @@ const createPost = asyncHandler(async (req, res) => {
 });
 
 
-// ... (previous functions remain unchanged)
 
 const updatePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
@@ -115,6 +114,40 @@ const getPost = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, post, "Post retrieved successfully"));
 });
 
-// ... (remaining functions unchanged)
 
-export { createPost, updatePost, getPost};
+const deletePost = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
+
+  const post = await PostModel.findById(postId);
+
+  if (!post) {
+    throw new ApiError(404, "Post not found");
+  }
+
+  if (post.user.toString() !== userId.toString()) {
+    throw new ApiError(403, "You can only delete your own posts");
+  }
+
+  if (post.image) {
+    const publicId = post.image.split('/').pop().split('.')[0];
+    await deleteFromCloudinary(publicId);
+  }
+
+  // Delete the post
+  await post.deleteOne();
+
+  // Respond with success message
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Post deleted successfully"));
+});
+
+
+
+
+export { createPost, updatePost, getPost, deletePost};
