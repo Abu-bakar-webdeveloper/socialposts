@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const postSchema = mongoose.Schema(
   {
-    userId: { type: String, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     desc: String,
     image: String,
   },
@@ -11,5 +11,5 @@ const postSchema = mongoose.Schema(
   }
 );
 
-var PostModel = mongoose.model("Posts", postSchema);
+var PostModel = mongoose.model("Post", postSchema);
 export default PostModel;

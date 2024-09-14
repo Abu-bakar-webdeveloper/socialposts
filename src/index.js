@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import connectDB from "./db/index.js"
 import cookieParser from 'cookie-parser';
 import userRouter from './routes/user.route.js';
+import postRouter from './routes/post.route.js';
 
 
 const app = express();
@@ -31,5 +32,6 @@ connectDB()
 // routes declaration
 
 app.use("/api/v1/user", userRouter)
+app.use("/api", postRouter)
 
 export { app }
